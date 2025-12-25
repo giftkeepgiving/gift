@@ -175,7 +175,7 @@ export default function Home() {
                   </svg>
                 </button>
                 <div className="">
-                  <a href="https://solscan.io/account/9F81pz8egr38BERVdJLzQWchvWKmeDpH6bGkaLtwW9Rh" className="text-blue-500 underline">gifts</a>
+                  <a href="https://solscan.io/account/G8wZFo3TyaRPNPM49D535s8NtSrQwHdTTbtbp2jFQRnW" className="text-blue-500 underline">gifts</a>
                 </div>
               </div>
               
