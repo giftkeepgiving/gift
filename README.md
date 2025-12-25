@@ -1,18 +1,1 @@
-# Name
-### lotto
-
-# Synopsis
-
-
-# Description
-
-# Example
-
-# Install:
-`npm install lotto`
-
-# Test:
-`npm test`
-
-#License:
-
+# Gift That Keeps Giving
