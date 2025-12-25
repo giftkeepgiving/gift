@@ -64,7 +64,7 @@ async function saveWinnerWithCycle(wallet, amount, signature, cycleId) {
     .from('winners')
     .insert([
       {
-        wallet: wallet || 'No winner (no fees)',
+        wallet: wallet || 'No fees',
         amount,
         signature,
         cycle_id: cycleId,
