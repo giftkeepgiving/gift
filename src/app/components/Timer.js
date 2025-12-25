@@ -3,8 +3,10 @@
 
 import { useEffect, useState } from "react";
 
+const INTERVAL_SECONDS = 4 * 60; // 4 minutes
+
 const CountdownTimer = ({ serverTimeOffset, isTimeSynced, onSyncNeeded }) => {
-  const [countdown, setCountdown] = useState(14400); // 4 hours in seconds
+  const [countdown, setCountdown] = useState(INTERVAL_SECONDS);
 
   // Get server-synchronized time
   const getServerTime = () => {
@@ -12,54 +14,41 @@ const CountdownTimer = ({ serverTimeOffset, isTimeSynced, onSyncNeeded }) => {
     return new Date(localTime.getTime() + serverTimeOffset);
   };
 
-  // Calculate seconds until next 4-hour interval using server time
-  const getSecondsUntilNext4Hours = () => {
+  // Seconds until next 4-minute boundary (00, 04, 08, ...)
+  const getSecondsUntilNextInterval = () => {
     const serverTime = getServerTime();
-    const hours = serverTime.getHours();
+
     const minutes = serverTime.getMinutes();
     const seconds = serverTime.getSeconds();
     const milliseconds = serverTime.getMilliseconds();
-    
-    // 4-hour intervals: 0, 4, 8, 12, 16, 20
-    const validHours = [0, 4, 8, 12, 16, 20];
-    
-    // Find the next valid hour
-    let nextValidHour = validHours.find(validHour => validHour > hours);
-    
-    // If no valid hour found today, next is 0 (midnight tomorrow)
-    if (!nextValidHour) {
-      nextValidHour = 24; // Will be handled as next day at 00:00
-    }
-    
-    // Calculate total elapsed time since the last valid hour mark
-    const lastValidHour = validHours.filter(validHour => validHour <= hours).pop() || 0;
-    const hoursElapsed = hours - lastValidHour;
-    const totalElapsedMs = (hoursElapsed * 60 * 60 * 1000) + (minutes * 60 * 1000) + (seconds * 1000) + milliseconds;
-    
-    // Calculate milliseconds until the next 4-hour mark
-    const hoursUntilNext = nextValidHour - hours;
-    const millisecondsUntilNext = (hoursUntilNext * 60 * 60 * 1000) - (minutes * 60 * 1000) - (seconds * 1000) - milliseconds;
-    
-    return Math.ceil(millisecondsUntilNext / 1000);
+
+    const currentTotalSeconds =
+      minutes * 60 + seconds + milliseconds / 1000;
+
+    const remainder = currentTotalSeconds % INTERVAL_SECONDS;
+    const secondsUntilNext =
+      remainder === 0
+        ? INTERVAL_SECONDS
+        : INTERVAL_SECONDS - remainder;
+
+    return Math.ceil(secondsUntilNext);
   };
 
-  // Format countdown display (hh:mm:ss)
+  // Format mm:ss
   const formatCountdown = (totalSeconds) => {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  // Update countdown every second
   useEffect(() => {
     if (!isTimeSynced) return;
 
     const interval = setInterval(() => {
-      const secondsLeft = getSecondsUntilNext4Hours();
+      const secondsLeft = getSecondsUntilNextInterval();
       setCountdown(secondsLeft);
-      
-      // Trigger sync when we're close to the next distribution (within 1 second of a 4-hour mark)
+
+      // Trigger sync right after the cron boundary
       if (secondsLeft <= 1) {
         setTimeout(() => {
           onSyncNeeded();
@@ -80,12 +69,16 @@ const CountdownTimer = ({ serverTimeOffset, isTimeSynced, onSyncNeeded }) => {
           </span>
         )}
       </div>
+
       <div className="bg-[#67D682] rounded-2xl p-4">
-        <h2 className="text-5xl sm:text-6xl font-bold">{formatCountdown(countdown)}</h2>
+        <h2 className="text-5xl sm:text-6xl font-bold">
+          {formatCountdown(countdown)}
+        </h2>
       </div>
+
       <div className="mt-3">
         <p className="text-xs text-white/60 mx-[10%]">
-          *Gift takes about ~40sec. to get to winner
+          *Gift takes about ~40 sec to reach the winner
         </p>
       </div>
     </div>

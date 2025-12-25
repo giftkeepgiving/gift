@@ -25,52 +25,37 @@ const WALLET = Keypair.fromSecretKey(bs58.decode(WALLET_SECRET));
 // Initialize Supabase client
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Helper function to get server time info for 4-hour cycles
+// Helper function to get server time info for 4-minute cycles
 function getServerTimeInfo() {
   const now = new Date();
-  
-  // 4-hour intervals: 0, 4, 8, 12, 16, 20
-  const validHours = [0, 4, 8, 12, 16, 20];
-  const currentHour = now.getHours();
+
   const minutes = now.getMinutes();
   const seconds = now.getSeconds();
   const milliseconds = now.getMilliseconds();
-  
-  // Find the current and next valid 4-hour marks
-  const currentValidHour = validHours.filter(validHour => validHour <= currentHour).pop() || 0;
-  let nextValidHour = validHours.find(validHour => validHour > currentHour);
-  
-  // Create next distribution time
-  const nextDistribution = new Date(now);
-  if (nextValidHour) {
-    nextDistribution.setHours(nextValidHour, 0, 0, 0);
-  } else {
-    // Next valid hour is tomorrow at 00:00
-    nextDistribution.setDate(nextDistribution.getDate() + 1);
-    nextDistribution.setHours(0, 0, 0, 0);
-  }
-  
-  // Create last distribution time
-  const lastDistribution = new Date(now);
-  lastDistribution.setHours(currentValidHour, 0, 0, 0);
-  
-  // Calculate time until next distribution
-  const millisecondsUntilNext = nextDistribution.getTime() - now.getTime();
-  const secondsUntilNext = Math.ceil(millisecondsUntilNext / 1000);
-  
-  // Create a unique cycle ID based on the last valid hour
-  // This ensures each 4-hour period has a unique ID
-  const cycleStart = new Date(lastDistribution);
-  const cycleId = Math.floor(cycleStart.getTime() / (4 * 60 * 60 * 1000));
-  
+
+  const INTERVAL_MS = 4 * 60 * 1000; // 4 minutes
+
+  const currentTimeMs = now.getTime();
+  const remainderMs = currentTimeMs % INTERVAL_MS;
+
+  const lastDistribution = new Date(currentTimeMs - remainderMs);
+  const nextDistribution = new Date(lastDistribution.getTime() + INTERVAL_MS);
+
+  const secondsUntilNext = Math.ceil(
+    (nextDistribution.getTime() - currentTimeMs) / 1000
+  );
+
+  // Unique ID per 4-minute window
+  const cycleId = Math.floor(currentTimeMs / INTERVAL_MS);
+
   return {
     serverTime: now.toISOString(),
     secondsUntilNext: Math.max(0, secondsUntilNext),
     nextDistributionTime: nextDistribution.toISOString(),
     lastDistributionTime: lastDistribution.toISOString(),
     currentCycle: cycleId,
-    currentValidHour,
-    tokenMintEmpty: !TOKEN_MINT || TOKEN_MINT.trim() === ""
+    currentMinuteBucket: Math.floor(minutes / 4) * 4,
+    tokenMintEmpty: !TOKEN_MINT || TOKEN_MINT.trim() === "",
   };
 }
 
