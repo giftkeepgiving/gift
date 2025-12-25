@@ -14,7 +14,7 @@ export default function Home() {
   const [noHolders, setNoHolders] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const contractAddress = "gibsoon";
+  const contractAddress = "7jJgmC1v8L55SfpSEVgEPZaN8NMv8d3rm8wXhN5Npump";
 
   //save
 
