@@ -71,9 +71,9 @@ const CountdownTimer = ({ serverTimeOffset, isTimeSynced, onSyncNeeded }) => {
   }, [isTimeSynced, serverTimeOffset, onSyncNeeded]);
 
   return (
-    <div className="bg-black/40 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl p-6 sm:p-8 text-center mb-8 min-w-[280px]">
+    <div className="bg-black/40 backdrop-blur-md border border-white/20 shadow-2xl p-6 sm:p-8 text-center mb-8 min-w-[280px]">
       <div className="flex items-center justify-center gap-2 mb-3">
-        <p className="text-base font-semibold text-white">Next pump in</p>
+        <p className="text-base font-semibold text-white">Next gift in</p>
         {!isTimeSynced && (
           <span className="text-xs text-yellow-400 bg-yellow-400/20 px-2 py-1 rounded">
             Syncing...
@@ -85,7 +85,7 @@ const CountdownTimer = ({ serverTimeOffset, isTimeSynced, onSyncNeeded }) => {
       </div>
       <div className="mt-3">
         <p className="text-xs text-white/60 mx-[10%]">
-          *Pump reward takes about ~40sec. to get to winner
+          *Gift takes about ~40sec. to get to winner
         </p>
       </div>
     </div>

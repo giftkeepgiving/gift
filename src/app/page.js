@@ -14,7 +14,7 @@ export default function Home() {
   const [noHolders, setNoHolders] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const contractAddress = "FBz2tNoqQ9xenq3qeCByDVoMh1BsZcY1itLf5vobpump";
+  const contractAddress = "gibsoon";
 
   // Use useCallback to prevent unnecessary re-renderz
   const syncServerTime = useCallback(async () => {
@@ -102,7 +102,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_70%)]"></div>
       </div>
 
-      <div className="fixed top-5 right-3 z-50 flex items-center">
+      <div className="fixed top-3 right-3 z-50 flex items-center">
         <Link
           href="https://x.com/powerpumpfun"
           target="_blank"
@@ -117,11 +117,11 @@ export default function Home() {
       </div>
       
       <div className="relative z-10 flex flex-col items-center p-4 sm:p-8">
-        <div className="text-center my-8">
+        <div className="text-center my-2">
           <img 
             src="/power.png" 
             alt="Power" 
-            className="h-16 sm:h-24 mx-auto mb-4"
+            className="h-40 sm:h-52 mx-auto mb-4"
           />
         </div>
 
@@ -149,7 +149,7 @@ export default function Home() {
             <div className="w-full max-w-2xl">
               <div className="flex items-center justify-center gap-3 mb-6">
                 <h2 className="text-2xl sm:text-3xl font-semibold">
-                  Recent Winners
+                  Recent Gifts
                 </h2>
                 <button
                   onClick={handleManualRefresh}
@@ -173,15 +173,15 @@ export default function Home() {
                   </svg>
                 </button>
                 <div className="">
-                  <a href="https://solscan.io/account/9F81pz8egr38BERVdJLzQWchvWKmeDpH6bGkaLtwW9Rh" className="text-blue-500 underline">payouts</a>
+                  <a href="https://solscan.io/account/" className="text-blue-500 underline">gifts</a>
                 </div>
               </div>
               
               <div className="space-y-4">
                 {winners.length === 0 ? (
-                  <div className="bg-black/40 backdrop-blur-md border border-white/20 rounded-2xl p-8 text-center">
+                  <div className="bg-black/40 backdrop-blur-md border border-white/20 p-8 text-center">
                     <p className="text-white/60 text-lg font-semibold">
-                      No winners yet...
+                      No gifts yet...
                     </p>
                   </div>
                 ) : (

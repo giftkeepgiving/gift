@@ -14,15 +14,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Powerpump",
-  description: "automated lottery protocol",
+  title: "Gift",
+  description: "the gift that keeps giving",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <Analytics />
-      <AnimatedMarquee />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
