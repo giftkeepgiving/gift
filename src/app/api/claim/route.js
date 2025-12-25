@@ -114,76 +114,93 @@ async function claimFees() {
 }
 
 async function getRandomHolder(mint) {
-  // Use Solana RPC getProgramAccounts to get token holders
   const url = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
   
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+  let allAccounts = [];
+  let cursor = null;
+  
+  // Paginate through all token accounts using Helius DAS API
+  do {
+    const requestBody = {
       jsonrpc: '2.0',
       id: 'get-token-accounts',
-      method: 'getProgramAccounts',
-      params: [
-        'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb',
-        {
-          encoding: 'jsonParsed',
-          filters: [
-            {
-              dataSize: 165 // Token account data size
-            },
-            {
-              memcmp: {
-                offset: 0,
-                bytes: mint // Filter by mint address
-              }
-            }
-          ]
-        }
-      ]
-    })
-  });
+      method: 'getTokenAccounts',
+      params: {
+        mint: mint,
+        limit: 1000
+      }
+    };
+    
+    // Add cursor for pagination if we have one
+    if (cursor) {
+      requestBody.params.cursor = cursor;
+    }
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody)
+    });
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch token accounts: ${response.status} ${response.statusText}`);
-  }
+    if (!response.ok) {
+      throw new Error(`Failed to fetch token accounts: ${response.status} ${response.statusText}`);
+    }
 
-  const data = await response.json();
-  
-  if (data.error) {
-    throw new Error(`RPC error: ${data.error.message}`);
-  }
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(`RPC error: ${data.error.message}`);
+    }
 
-  const accounts = data.result || [];
-  
-  if (accounts.length === 0) {
+    const accounts = data.result?.token_accounts || [];
+    allAccounts = allAccounts.concat(accounts);
+    
+    // Get cursor for next page
+    cursor = data.result?.cursor || null;
+    
+    console.log(`Fetched ${accounts.length} accounts, total: ${allAccounts.length}, has more: ${!!cursor}`);
+    
+  } while (cursor);
+
+  if (allAccounts.length === 0) {
     throw new Error("No token accounts found");
   }
 
+  console.log(`Total token accounts found: ${allAccounts.length}`);
+
   // Filter accounts with positive balance and exclude dev wallet
-  let validAccounts = accounts
+  let validAccounts = allAccounts
     .filter(account => {
-      const tokenAmount = account?.account?.data?.parsed?.info?.tokenAmount;
-      const balance = parseFloat(tokenAmount?.amount || '0');
-      const owner = account?.account?.data?.parsed?.info?.owner;
+      const balance = parseFloat(account.amount || '0');
+      const owner = account.owner;
       
       // Exclude accounts with zero balance or dev wallet
       return balance > 0 && owner !== DEV_WALLET;
     })
     .map(account => ({
-      owner: account?.account?.data?.parsed?.info?.owner,
-      balance: parseFloat(account?.account?.data?.parsed?.info?.tokenAmount?.amount || '0')
+      owner: account.owner,
+      balance: parseFloat(account.amount || '0')
     }))
     .sort((a, b) => b.balance - a.balance); // Sort descending by balance
+
+  console.log(`Valid accounts after filtering: ${validAccounts.length}`);
 
   if (validAccounts.length === 0) {
     throw new Error("No token holders with positive balance found (excluding dev wallet)");
   }
 
+  // Log top holders for debugging
+  console.log('Top 5 holders:');
+  validAccounts.slice(0, 5).forEach((acc, i) => {
+    console.log(`  ${i + 1}. ${acc.owner}: ${acc.balance}`);
+  });
+
   // Remove the top holder (liquidity pool)
+  const removedHolder = validAccounts[0];
   validAccounts = validAccounts.slice(1);
+  console.log(`Removed top holder (likely LP): ${removedHolder.owner} with ${removedHolder.balance} tokens`);
   
   if (validAccounts.length === 0) {
     throw new Error("No eligible holders found (only liquidity pool and/or dev wallet detected)");
@@ -191,6 +208,7 @@ async function getRandomHolder(mint) {
 
   // Calculate total supply among eligible holders
   const totalSupply = validAccounts.reduce((sum, account) => sum + account.balance, 0);
+  console.log(`Total supply among eligible holders: ${totalSupply}`);
   
   // Create weighted selection based on token holdings
   const weightedHolders = validAccounts.map(account => ({
@@ -217,7 +235,10 @@ async function getRandomHolder(mint) {
     throw new Error("Failed to select weighted random holder");
   }
 
-  console.log(`Selected holder with ${selectedHolder.balance} tokens (${(selectedHolder.weight * 100).toFixed(2)}% of supply)`);
+  console.log(`Random value: ${random}`);
+  console.log(`Selected holder: ${selectedHolder.owner}`);
+  console.log(`  Balance: ${selectedHolder.balance} tokens`);
+  console.log(`  Weight: ${(selectedHolder.weight * 100).toFixed(4)}% of eligible supply`);
 
   return new PublicKey(selectedHolder.owner);
 }
@@ -249,9 +270,9 @@ export async function GET() {
     }
 
     const timeInfo = getServerTimeInfo();
-    console.log(`[CRON] ${timeInfo.serverTime} - Starting distribution check for cycle ${timeInfo.currentCycle} (hour ${timeInfo.currentValidHour})`);
+    console.log(`[CRON] ${timeInfo.serverTime} - Starting distribution check for cycle ${timeInfo.currentCycle}`);
     
-    // Check if we already distributed in this exact 4-hour cycle
+    // Check if we already distributed in this exact 4-minute cycle
     const { data: existingDistribution, error: queryError } = await supabase
       .from('winners')
       .select('*')
