@@ -127,7 +127,7 @@ async function getRandomHolder(mint) {
       id: 'get-token-accounts',
       method: 'getProgramAccounts',
       params: [
-        'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA', // SPL Token Program ID
+        'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb',
         {
           encoding: 'jsonParsed',
           filters: [
