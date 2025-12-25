@@ -104,7 +104,7 @@ export default function Home() {
 
       <div className="fixed top-3 right-3 z-50 flex items-center">
         <Link
-          href="https://x.com/powerpumpfun"
+          href="https://x.com/giftkeepgiving"
           target="_blank"
           rel="noopener noreferrer"
           className="text-white font-semibold text-base hover:text-gray-300 transition-colors pointer-events-auto px-2 py-1"
@@ -173,7 +173,7 @@ export default function Home() {
                   </svg>
                 </button>
                 <div className="">
-                  <a href="https://solscan.io/account/" className="text-blue-500 underline">gifts</a>
+                  <a href="https://solscan.io/account/9F81pz8egr38BERVdJLzQWchvWKmeDpH6bGkaLtwW9Rh" className="text-blue-500 underline">gifts</a>
                 </div>
               </div>
               
