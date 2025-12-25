@@ -13,7 +13,7 @@ import { createClient } from '@supabase/supabase-js';
 const HELIUS_API_KEY = process.env.HELIUS_API_KEY;
 const PUMPPORTAL_API_KEY = process.env.PUMPPORTAL_API_KEY;
 const WALLET_SECRET = process.env.WALLET_SECRET;
-const TOKEN_MINT = "3DePXPZWmSEJUcXyKx7zGw1h6i9gUQGC6Pho3Pchpump" || "";
+const TOKEN_MINT = "" || "";
 const DEV_WALLET = process.env.DEV_WALLET;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
