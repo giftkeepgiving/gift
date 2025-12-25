@@ -16,6 +16,8 @@ export default function Home() {
 
   const contractAddress = "gibsoon";
 
+  //save
+
   // Use useCallback to prevent unnecessary re-renderz
   const syncServerTime = useCallback(async () => {
     try {
